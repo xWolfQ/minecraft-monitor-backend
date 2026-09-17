@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: minecraft-monitor-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mc_monitor
+    username: monitor_user
+    password: secret_password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  web:
+    error:
+      include-message: always
+      include-binding-errors: always
+
+app:
+  agent:
+    api-key: "tajny-klucz-agenta-123"
+
+logging:
+  level:
+    web: DEBUG
+    org.springframework.web: DEBUG
