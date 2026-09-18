@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import pl.xwolfq.monitor.dto.AlertEventDto;
 import pl.xwolfq.monitor.dto.MetricPayloadDto;
 
 import java.io.IOException;
@@ -65,6 +66,26 @@ public class MetricStreamService {
                         .data(metric));
             } catch (IOException | IllegalStateException ex) {
                 log.warn("Removing dead SSE client ({}, active before: {})",
+                        ex.getMessage(), clients.size());
+                clients.remove(emitter);
+            }
+        }
+    }
+
+    /**
+     * Rozsyła zdarzenie alertu do wszystkich aktywnych klientów.
+     * Event przesyłany jest pod nazwą {@code alert-event}.
+     *
+     * @param alert dane alertu do przesłania
+     */
+    public void broadcastAlert(AlertEventDto alert) {
+        for (SseEmitter emitter : clients) {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("alert-event")
+                        .data(alert));
+            } catch (IOException | IllegalStateException ex) {
+                log.warn("Removing dead SSE client while broadcasting alert ({}, active before: {})",
                         ex.getMessage(), clients.size());
                 clients.remove(emitter);
             }

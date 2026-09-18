@@ -26,11 +26,13 @@ public class MetricService {
 
     private final MetricRepository metricRepository;
     private final MetricStreamService metricStreamService;
+    private final AlertEvaluatorService alertEvaluatorService;
 
     /**
      * Konwertuje payload z agenta na encję i zapisuje ją w bazie.
      * Gdy {@code timestamp} nie zostanie dostarczony, przypisywany jest
-     * {@link Instant#now()}.
+     * {@link Instant#now()}. Po zapisie metryka jest ewaluowana przez
+     * {@link AlertEvaluatorService} i rozsyłana klientom SSE.
      *
      * @param payload zweryfikowany payload metryk (walidacja po stronie kontrolera)
      * @return zapisana encja {@link ServerMetric}
@@ -38,6 +40,7 @@ public class MetricService {
     @Transactional
     public ServerMetric saveMetric(MetricPayloadDto payload) {
         ServerMetric saved = metricRepository.save(toEntity(payload));
+        alertEvaluatorService.evaluate(saved);
         metricStreamService.broadcast(payload);
         return saved;
     }
